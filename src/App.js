@@ -18,18 +18,21 @@ class App extends React.Component {
     };
 
     this.randomSearch = this.randomSearch.bind(this);
+    this.disInterest = this.disInterest.bind(this);
+
+    (async () => {
+      const jsonData = await getProductData();
+      const recentProduct = getLocalStorage(RECENT_PRODUCT) || [];
+
+      this.setState(
+        { productData: jsonData, recentProduct: recentProduct },
+        this.randomSearch
+      );
+    })();
   }
 
-  async componentDidMount() {
-    const jsonData = await getProductData();
-    const recentProduct = getLocalStorage(RECENT_PRODUCT);
-
-    this.setState({ productData: jsonData });
-    this.setState({ recentProduct: recentProduct });
-  }
-
-  addRecentProduct(product) {
-    const prevProduct = this.findRecentProduct(product);
+  addRecentProduct(product, callback) {
+    const prevProduct = this.findRecentProduct(product) ? product : null;
 
     if (prevProduct) {
       const subProductList = this.state.recentProduct.filter(
@@ -37,13 +40,17 @@ class App extends React.Component {
       );
       const newProduct = { ...prevProduct };
 
-      this.setState({ recentProduct: [...subProductList, newProduct] });
+      this.setState(
+        { recentProduct: [...subProductList, newProduct] },
+        callback
+      );
       setLocalStorage(RECENT_PRODUCT, [...subProductList, newProduct]);
     } else {
       const newProduct = { ...product };
 
       this.setState({
         recentProduct: [...this.state.recentProduct, newProduct],
+        callback,
       });
       setLocalStorage(RECENT_PRODUCT, [
         ...this.state.recentProduct,
@@ -78,9 +85,17 @@ class App extends React.Component {
     ]);
 
     product.date = new Date();
-    product.isIgnore = false;
+    if (product.isIgnore === undefined) product.isIgnore = false;
     this.setState({ nowProduct: product });
     this.addRecentProduct(product);
+  }
+
+  disInterest() {
+    const product = { ...this.state.nowProduct };
+
+    product.date = new Date();
+    product.isIgnore = true;
+    this.addRecentProduct(product, this.randomSearch());
   }
 
   getProductComponent(product, isRecent = false) {
@@ -110,6 +125,7 @@ class App extends React.Component {
         <div>
           <div>
             <button onClick={this.randomSearch}>랜덤 조회</button>
+            <button onClick={this.disInterest}>관심 없음</button>
           </div>
           <div>
             현재 상품
