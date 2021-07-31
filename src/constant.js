@@ -1,1 +1,1 @@
-export const recentProduct = "recentProduct";
+export const RECENT_PRODUCT = "recentProduct";

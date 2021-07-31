@@ -1,7 +1,12 @@
 import "./App.css";
 import React from "react";
-import { getProductData, setLocalStorage, getRandom } from "./utils";
-import { recentProduct } from "./constant";
+import {
+  getProductData,
+  getLocalStorage,
+  setLocalStorage,
+  getRandom,
+} from "./utils";
+import { RECENT_PRODUCT } from "./constant";
 
 class App extends React.Component {
   constructor(props) {
@@ -17,8 +22,10 @@ class App extends React.Component {
 
   async componentDidMount() {
     const jsonData = await getProductData();
+    const recentProduct = getLocalStorage(RECENT_PRODUCT);
 
     this.setState({ productData: jsonData });
+    this.setState({ recentProduct: recentProduct });
   }
 
   addRecentProduct(product) {
@@ -31,14 +38,17 @@ class App extends React.Component {
       const newProduct = { ...prevProduct };
 
       this.setState({ recentProduct: [...subProductList, newProduct] });
-      setLocalStorage(recentProduct, [...subProductList, newProduct]);
+      setLocalStorage(RECENT_PRODUCT, [...subProductList, newProduct]);
     } else {
       const newProduct = { ...product };
 
       this.setState({
         recentProduct: [...this.state.recentProduct, newProduct],
       });
-      setLocalStorage(recentProduct, [...this.state.recentProduct, newProduct]);
+      setLocalStorage(RECENT_PRODUCT, [
+        ...this.state.recentProduct,
+        newProduct,
+      ]);
     }
   }
 
